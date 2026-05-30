@@ -165,16 +165,16 @@ wire B2_D = joy2[2];
 wire B2_L = joy2[1];
 wire B2_R = joy2[0];
 
-// Freeplay option 
+// Autocoin option 
 
 wire m_start1;
 wire m_start2;
 wire m_coin1;
 
-freeplay #(
+autocoin #(
 	.count(64000),
 	.delay(2))
-freeplay (
+autocoin (
   .i_clk(clk_cpu),
   .i_coin(B1_C),
   .i_start1(B1_S),
