@@ -13,6 +13,10 @@ library ieee;
 entity SPACEFIREBIRD is
 port
 (
+	I_Firebird : in  std_logic;
+	I_Bullet   : in  std_logic;
+	I_Song     : in  std_logic;
+	
 	O_VIDEO_R  : out std_logic_vector(7 downto 0);
 	O_VIDEO_G  : out std_logic_vector(7 downto 0);
 	O_VIDEO_B  : out std_logic_vector(7 downto 0);
@@ -132,6 +136,7 @@ architecture RTL of SPACEFIREBIRD is
 	signal S_Control			: std_logic_vector(7 downto 0) := x"00";
 	signal S_Trigger			: std_logic_vector(3 downto 0);
 	signal L_Trigger			: std_logic_vector(2 downto 0);
+	signal song  				: std_logic_vector(7 downto 0) := (others =>'0');
 	
 begin
 
@@ -140,9 +145,10 @@ begin
   O_VIDEO_B <= B;
   O_FLIP    <= RV;
   
-  SAMPLE_CTL <= S_Trigger;
-  O_AUDIO <= SFX;
+  -- Just SFX for Space Firebird, add in song if required for Space Demon
+  O_AUDIO <= SFX when (I_Song='1') else std_logic_vector(signed("00" & song & song(7 downto 2)) + signed(SFX(15 downto 1)));
   
+  SAMPLE_CTL <= S_Trigger;
   PCADDR    <= cpu_addr;
   PCDATA    <= rom_data;
   
@@ -519,6 +525,9 @@ end process;
 --
 video : work.SPACEFIREBIRD_VIDEO
 port map (
+	I_Firebird => I_Firebird,
+	I_Bullet  => I_Bullet,
+	--
 	I_HCNT    => I_HCOUNT,
 	I_VCNT    => I_VCOUNT,
 	--
@@ -528,8 +537,8 @@ port map (
 	I_CONT_R  => CONT_R,
 	I_CONT_G  => CONT_G,
 	I_CONT_B  => CONT_B,
-	I_ALRD    => ALRD,
-	I_ALBU    => ALBU,
+	I_ALRD    => (ALRD),
+	I_ALBU    => (ALBU),
 	--
 	I_SPRITE  => v_sprite_data,
 	O_VADDR   => vid_addr,
@@ -613,6 +622,18 @@ port map (
 	O_SOUND_DAT		=> SFX,
 	ROM_A				=> ROM_A,
 	ROM_D				=> ROM_D
+);
+
+-- Melody Chip (Space Demon only)
+
+music: entity work.epson_7910E
+port map
+(
+	clk      => SND_CLK,
+	reset    => '0',
+	trigger  => (ALBU and not I_Firebird),
+	sel_song => ALRD,
+	snd      => song
 );
 
 end RTL;

@@ -11,8 +11,8 @@
 	<manufacturer>Nintendo</manufacturer>
 	<category>Shoot'em up</category>
 
-	<setname>spacefb</setname>
-	<parent>spacefb</parent>
+	<setname>SpaceFirebird</setname>
+	<parent>SpaceFirebird</parent>
 	<mameversion>0219</mameversion>
 	<rbf>SpaceFirebird</rbf>
 	<about></about>
@@ -33,7 +33,12 @@
 		<dip bits="4" ids="5000,8000" name="Bonus life"></dip>
 		<dip bits="5" ids="Cocktail,Upright" name="Cabinet"></dip>
 		<dip bits="8" ids="Off,On" name="Autocoin"></dip>
+		<dip bits="9" ids="Red,Yellow" name="Bullets"></dip>
 		</switches>
+
+	<rom index="1">
+		<part>00</part>
+	</rom>
 
 	<rom index="0" md5="none" zip="spacefb.zip">
 		<part crc="79c3527e" name="tst-c-u.5e"></part>
