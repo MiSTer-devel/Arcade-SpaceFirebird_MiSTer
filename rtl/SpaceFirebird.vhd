@@ -136,7 +136,6 @@ architecture RTL of SPACEFIREBIRD is
 	signal S_Control			: std_logic_vector(7 downto 0) := x"00";
 	signal S_Trigger			: std_logic_vector(5 downto 0);
 	signal L_Trigger			: std_logic_vector(3 downto 0);
-	signal song  				: std_logic_vector(7 downto 0) := (others =>'0');
 	
 begin
 
