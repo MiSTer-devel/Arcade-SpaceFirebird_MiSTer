@@ -289,7 +289,7 @@ SPACEFIREBIRD bird
 reg  [27:0] wav_addr;
 wire [15:0] wav_data_o;
 wire        wav_want_byte;
-wire [3:0]  sample_ctrl;
+wire [5:0]  sample_ctrl;
 
 reg  Ready_L;
 wire Ready;

@@ -14,6 +14,5 @@ set_global_assignment -name VHDL_FILE rtl/SpaceFirebird.vhd
 set_global_assignment -name VHDL_FILE rtl/SpaceFirebird_video.vhd
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/nintendo_soundboard.sv
 set_global_assignment -name VERILOG_FILE rtl/nintendo_sound.v
-set_global_assignment -name VHDL_FILE rtl/7910E.vhd
 
 set_global_assignment -name SYSTEMVERILOG_FILE "Arcade-SpaceFirebird.sv"
