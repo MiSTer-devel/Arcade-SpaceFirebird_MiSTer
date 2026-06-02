@@ -16,6 +16,14 @@ required number of coins first.
 This can be used on games that do not have a freeplay selection, or where using it
 stops the attract mode from running.
 
+Looking around the web videos of real machines seem to have red or yellow bullets.
+The schematics show orange / yellow (but with one resistor mislabelled as 68 ohm)
+Mame uses red, because of this error on the schematics.
+
+It is possible that Nintendo PCBs were different from Gremlin / Sega PCBs
+
+because of this you can now select which colour you prefer from the DIP settings
+
                                 *** Attention ***
 
 ROMs are not included. In order to use this arcade, you need to provide the

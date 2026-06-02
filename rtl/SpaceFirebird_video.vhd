@@ -16,6 +16,9 @@ GENERIC (
 	CLIP_R : natural := 255
 );
 port (
+	I_Firebird 			: in  std_logic;
+	I_Bullet          : in  std_logic;	
+	--
 	I_HCNT            : in    std_logic_vector(8 downto 0);
 	I_VCNT            : in    std_logic_vector(8 downto 0);
 	--
@@ -61,9 +64,10 @@ architecture RTL of SPACEFIREBIRD_VIDEO is
 	signal colour_data   : std_logic_vector(7 downto 0);
 	
 	signal star_dis		: std_logic;
-	signal star_rng		: std_logic_vector(16 downto 0);
+	signal star_rng		: std_logic_vector(16 downto 0) := '0' & x"38F6";
 	signal SR,SG,SB      : std_logic_vector(7 downto 0);
 	signal ALRD, ALBU	   : std_logic;
+	signal skipstar 	   : std_logic;
 
 -- Data for two screen lines
 	type   pixrow is array (255 downto 0,1 downto 0) of std_logic_vector(5 downto 0);
@@ -446,7 +450,11 @@ RenderScreen : process
 									end if;
 								
 									if CheckH >= CLIP_L and CheckH <= CLIP_R then
-										rowdata(CheckH, Bank) <= "00001101"; 	-- Yellow
+										if I_Bullet = '1' then
+											rowdata(CheckH, Bank) <= "00001101"; 	-- Yellow
+										else
+											rowdata(CheckH, Bank) <= "00001111"; 	-- Red
+										end if;
 									end if;
 								end if;
 								
@@ -474,10 +482,11 @@ RenderScreen : process
   begin
 		wait until rising_edge(VID_CLK);
 		
-		-- reset rng for start of visible screen
+		-- just before start of visible screen, set things up
 		if I_HCNT = 310 and I_VCNT = 260 then
 		
-			star_rng <= '0' & x"38F6";
+			-- Space firebird skips one random number per screen to keep stars static
+			skipstar <= I_Firebird;
 
 			-- save controls so affect entire screen
 			star_dis <= I_STARS;
@@ -486,7 +495,8 @@ RenderScreen : process
 			
 		end if;
 		
-		if I_HCNT >= CLIP_L and I_HCNT <= CLIP_R and star_dis = '0' then
+		-- visual screen 0-223, off screen 224-255
+		if I_HCNT >= CLIP_L and I_HCNT <= CLIP_R and I_VCNT <= 255 and star_dis = '0' then
 		
 			-- generate a star ? --
 			if I_PIX(0) = '0' then
@@ -499,15 +509,15 @@ RenderScreen : process
 					-- CONT G
 					-- CONT B
 					
-					-- ALRD         Turns background red on
-					-- ALBU         Turns background blue on
+					-- ALRD         Turns background red on (Space Firebird only)
+					-- ALBU         Turns background blue on (Space Firebird only)
 					
-					colour := (star_rng(13) or ALRD) & (star_rng(12) and I_CONT_R) & (star_rng(11) or ALBU) & (star_rng(10) and I_CONT_B) & star_rng(9) & (star_rng(8) and I_CONT_G);
+					colour := (star_rng(13) or (ALRD and I_Firebird)) & (star_rng(12) and I_CONT_R) & (star_rng(11) or (ALBU and I_Firebird)) & (star_rng(10) and I_CONT_B) & star_rng(9) & (star_rng(8) and I_CONT_G);
 					
 				else
 				
 					-- back ground controls only
-					colour := ALRD & '0' & ALBU & "000";
+					colour := (ALRD and I_Firebird) & '0' & (ALBU and I_Firebird) & "000";
 					
 				end if;
 				
@@ -515,8 +525,12 @@ RenderScreen : process
 				BLUE  := 72 * to_integer(unsigned(colour(3 downto 2)));
 				GREEN := 72 * to_integer(unsigned(colour(1 downto 0)));
 
-				-- next RNG				
-				star_rng <= star_rng(15 downto 0) & (star_rng(16) xor star_rng(4));
+				-- next RNG (skip one if Space Firebird)
+				if I_VCNT = 255 and skipstar = '1' then
+					skipstar <= '0';
+				else
+					star_rng <= star_rng(15 downto 0) & (star_rng(16) xor star_rng(4));
+				end if;
 				
 			else
 			

@@ -13,6 +13,10 @@ library ieee;
 entity SPACEFIREBIRD is
 port
 (
+	I_Firebird : in  std_logic;
+	I_Bullet   : in  std_logic;
+	I_Song     : in  std_logic;
+	
 	O_VIDEO_R  : out std_logic_vector(7 downto 0);
 	O_VIDEO_G  : out std_logic_vector(7 downto 0);
 	O_VIDEO_B  : out std_logic_vector(7 downto 0);
@@ -20,7 +24,7 @@ port
 	I_HCOUNT   : in  std_logic_vector(8 downto 0);
 	I_VCOUNT   : in  std_logic_vector(8 downto 0);
 	--
-	SAMPLE_CTL : out std_logic_vector(3 downto 0);
+	SAMPLE_CTL : out std_logic_vector(5 downto 0);
 	O_AUDIO    : out std_logic_vector(15 downto 0);
 	--
 	dipsw1     : in  std_logic_vector(7 downto 0);
@@ -130,8 +134,8 @@ architecture RTL of SPACEFIREBIRD is
 	-- Sound
 	signal SFX 			   	: std_logic_vector(15 downto 0);
 	signal S_Control			: std_logic_vector(7 downto 0) := x"00";
-	signal S_Trigger			: std_logic_vector(3 downto 0);
-	signal L_Trigger			: std_logic_vector(2 downto 0);
+	signal S_Trigger			: std_logic_vector(5 downto 0);
+	signal L_Trigger			: std_logic_vector(3 downto 0);
 	
 begin
 
@@ -139,10 +143,9 @@ begin
   O_VIDEO_G <= G;
   O_VIDEO_B <= B;
   O_FLIP    <= RV;
+  O_AUDIO   <= SFX;
   
   SAMPLE_CTL <= S_Trigger;
-  O_AUDIO <= SFX;
-  
   PCADDR    <= cpu_addr;
   PCDATA    <= rom_data;
   
@@ -519,6 +522,9 @@ end process;
 --
 video : work.SPACEFIREBIRD_VIDEO
 port map (
+	I_Firebird => I_Firebird,
+	I_Bullet  => I_Bullet,
+	--
 	I_HCNT    => I_HCOUNT,
 	I_VCNT    => I_VCOUNT,
 	--
@@ -560,13 +566,13 @@ begin
 	if Global_Reset='0' then
 	
 		-- All stop
-		S_Trigger <= "0000";
-		L_Trigger <= "111";
+		S_Trigger <= "000000";
+		L_Trigger <= "0000";
 		
 	else
 	
 		-- Save Last for transition tests
-		L_Trigger <= S_Control(0) & S_Control(6) & S_Control(7);
+		L_Trigger <= ALBU & S_Control(0) & S_Control(6) & S_Control(7);
 		
 		-- bit 0 = discrete sound (Enemy death)
 		if L_Trigger(2) /= S_Control(0) then
@@ -582,6 +588,19 @@ begin
 		-- bit 6 = discrete sound (Ship fire)
 		if L_Trigger(1) /= S_Control(6) then
 			S_Trigger(3) <= not S_Control(6);
+		end if;
+		
+		if I_Firebird='1' or I_Song='1' then
+			S_Trigger (5 downto 4) <= "00";
+		else
+			-- Space Demon - assume tune selected by ALRD - without access to PCB cannot confirm!
+			if L_Trigger(3) /= ALBU then
+				if ALRD='1' then
+					S_Trigger(5 downto 4) <= '0' & ALBU;
+				else
+					S_Trigger(5 downto 4) <= ALBU & '0';
+				end if;
+			end if;
 		end if;
 		
 	end if;
