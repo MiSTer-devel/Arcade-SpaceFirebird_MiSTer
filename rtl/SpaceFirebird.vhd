@@ -40,6 +40,8 @@ port
 	PCADDR     : out std_logic_vector(15 downto 0);
 	PCDATA     : out std_logic_vector(7 downto 0);
 	--
+	I_FLIP     : in  std_logic;
+	I_PAUSE    : in  std_logic;
 	RESET      : in  std_logic;
 	O_FLIP     : out std_logic;
 	--
@@ -137,20 +139,40 @@ architecture RTL of SPACEFIREBIRD is
 	signal S_Trigger			: std_logic_vector(5 downto 0);
 	signal L_Trigger			: std_logic_vector(3 downto 0);
 	
+	-- Pause
+	signal pause_s1    : std_logic := '0';
+	signal pause_s2    : std_logic := '0';
+	signal pause_cpu   : std_logic := '0';
+	
 begin
 
   O_VIDEO_R <= R;
   O_VIDEO_G <= G;
   O_VIDEO_B <= B;
-  O_FLIP    <= RV;
-  O_AUDIO   <= SFX;
+  O_FLIP    <= RV or I_FLIP;
+  O_AUDIO   <= (others => '0') when pause_cpu = '1' else SFX;
   
   SAMPLE_CTL <= S_Trigger;
   PCADDR    <= cpu_addr;
   PCDATA    <= rom_data;
   
   Global_Reset <= (not RESET);  
+    
+	p_pause_sync : process
+	begin
+		 wait until rising_edge(CPU_CLK);
 
+		 if Global_Reset = '0' then
+			  pause_s1  <= '0';
+			  pause_s2  <= '0';
+			  pause_cpu <= '0';
+		 else
+			  pause_s1  <= I_PAUSE;
+			  pause_s2  <= pause_s1;
+			  pause_cpu <= pause_s2;
+		 end if;
+	end process;
+  
   p_cpu_int : process
   begin
    wait until rising_edge(VID_CLK);
@@ -184,7 +206,7 @@ begin
 		WAIT_n        => '1',
 		INT_n         => cpu_int_l,
 		NMI_n         => '1',
-		BUSRQ_n       => '1',
+		BUSRQ_n       => not pause_cpu,
 		MREQ_n        => cpu_mreq_l,
 		RD_n          => cpu_rd_l,
 		WR_n          => cpu_wr_l,
@@ -528,7 +550,7 @@ port map (
 	I_HCNT    => I_HCOUNT,
 	I_VCNT    => I_VCOUNT,
 	--
-	I_FLIP    => RV,
+	I_FLIP    => RV or I_FLIP,
 	I_CREF    => CREF,
 	I_STARS   => ALBA,
 	I_CONT_R  => CONT_R,
