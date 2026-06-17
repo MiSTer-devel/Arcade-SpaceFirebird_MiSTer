@@ -149,7 +149,7 @@ begin
   O_VIDEO_R <= R;
   O_VIDEO_G <= G;
   O_VIDEO_B <= B;
-  O_FLIP    <= RV or I_FLIP;
+  O_FLIP    <= RV xor I_FLIP;
   O_AUDIO   <= (others => '0') when pause_cpu = '1' else SFX;
   
   SAMPLE_CTL <= S_Trigger;
@@ -550,7 +550,7 @@ port map (
 	I_HCNT    => I_HCOUNT,
 	I_VCNT    => I_VCOUNT,
 	--
-	I_FLIP    => RV or I_FLIP,
+	I_FLIP    => RV xor I_FLIP,
 	I_CREF    => CREF,
 	I_STARS   => ALBA,
 	I_CONT_R  => CONT_R,

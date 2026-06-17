@@ -67,7 +67,7 @@ architecture RTL of SPACEFIREBIRD_VIDEO is
 	signal star_rng		: std_logic_vector(16 downto 0) := '0' & x"38F6";
 	signal SR,SG,SB      : std_logic_vector(7 downto 0);
 	signal ALRD, ALBU	   : std_logic;
-	signal skipstar 	   : std_logic;
+	signal skipstar 	   : std_logic_vector(1 downto 0)  := "00";
 
 -- Data for two screen lines
 	type   pixrow is array (255 downto 0,1 downto 0) of std_logic_vector(5 downto 0);
@@ -486,7 +486,12 @@ RenderScreen : process
 		if I_HCNT = 310 and I_VCNT = 260 then
 		
 			-- Space firebird skips one random number per screen to keep stars static
-			skipstar <= I_Firebird;
+			if I_Firebird = '1' then
+				skipstar <= "01";
+			elsif I_FLIP = '1' then
+				-- if Space demon and screen flipped, skip two so stars scroll correct way
+				skipstar <= "10";
+			end if;
 
 			-- save controls so affect entire screen
 			star_dis <= I_STARS;
@@ -526,8 +531,8 @@ RenderScreen : process
 				GREEN := 72 * to_integer(unsigned(colour(1 downto 0)));
 
 				-- next RNG (skip one if Space Firebird)
-				if I_VCNT = 255 and skipstar = '1' then
-					skipstar <= '0';
+				if I_VCNT = 255 and skipstar > 0 then
+					skipstar <= skipstar - '1';
 				else
 					star_rng <= star_rng(15 downto 0) & (star_rng(16) xor star_rng(4));
 				end if;
