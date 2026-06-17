@@ -65,6 +65,8 @@ localparam CONF_STR = {
    "OSV,CRT V adjust,0,+1,+2,+3,+4,+5,+6,+7,-8,-7,-6,-5,-4,-3,-2,-1;",
 	"H0OJK,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
 	"H1H0O2,Orientation,Vert,Horz;",
+	"H1O6,Flip,Off,On;",
+	"O7,Pause,Off,On;",
 	"O35,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
 	"-;",
 	"DIP;",
@@ -198,6 +200,8 @@ wire no_rotate = status[2] | direct_video;
 wire rotate_ccw = 1;
 wire flip = 0;
 wire video_rotated;
+wire io_flip = status[6];
+wire pause_req = status[7];
 
 wire pix_ena;
 wire [1:0] pix_cnt;
@@ -254,6 +258,7 @@ SPACEFIREBIRD bird
 	
 	.I_HCOUNT(HCount),
 	.I_VCOUNT(VCount),
+	.I_FLIP(io_flip),
 
 	.dn_addr(ioctl_addr[15:0]),
 	.dn_data(ioctl_dout),
@@ -275,6 +280,7 @@ SPACEFIREBIRD bird
 	.O_FLIP(sflip),
 `endif	
 
+	.I_PAUSE(pause_req),
 	.RESET(iRST),
 	.I_PIX(pix_cnt),
 	
