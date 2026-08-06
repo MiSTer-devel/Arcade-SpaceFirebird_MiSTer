@@ -11,9 +11,9 @@
 	<manufacturer>Nintendo</manufacturer>
 	<category>Shoot'em up</category>
 
-	<setname>SpaceDemon</setname>
-	<parent>SpaceFirebird</parent>
-	<mameversion>0219</mameversion>
+	<setname>spacedem</setname>
+	<parent>spacefb</parent>
+	<mameversion>0289</mameversion>
 	<rbf>SpaceFirebird</rbf>
 	<about></about>
 
